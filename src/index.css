@@ -1,0 +1,420 @@
+/* =========================================================
+   HH GOA — IDENTITY STUDIO
+   Global CSS Design System
+   ========================================================= */
+
+/* --- TOKENS -------------------------------------------- */
+:root {
+  --green-deep:    #1a5c2a;
+  --green-mid:     #2a7a40;
+  --green-light:   #4aad60;
+  --green-pale:    #c8f0d2;
+  --yellow:        #f5e842;
+  --yellow-dark:   #d4c500;
+  --pink:          #f52d7e;
+  --pink-dark:     #c01060;
+  --cream:         #faf5e8;
+  --cream-dark:    #f0e8d0;
+  --white:         #ffffff;
+  --ink:           #0f2a16;
+
+  --font-display:  'Playfair Display', Georgia, serif;
+  --font-mono:     'Space Mono', monospace;
+  --font-cond:     'Barlow Condensed', sans-serif;
+  --font-body:     'Barlow', sans-serif;
+
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* --- RESET --------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--green-deep);
+  color: var(--cream);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+img, video { display: block; max-width: 100%; }
+button { cursor: pointer; border: none; background: none; font: inherit; }
+input, textarea { font: inherit; }
+
+/* --- GRAIN TEXTURE OVERLAY ----------------------------- */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* --- HALFTONE PATTERN ---------------------------------- */
+.halftone-bg {
+  background-image: radial-gradient(circle, rgba(245,232,66,0.15) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* --- TYPOGRAPHY UTILITIES ------------------------------ */
+.type-display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+}
+
+.type-display-italic {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.9;
+}
+
+.type-cond {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.type-mono {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
+.type-label {
+  font-family: var(--font-cond);
+  font-weight: 600;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* --- COLOR UTILITIES ----------------------------------- */
+.text-yellow  { color: var(--yellow); }
+.text-pink    { color: var(--pink); }
+.text-cream   { color: var(--cream); }
+.text-green   { color: var(--green-deep); }
+.text-ink     { color: var(--ink); }
+
+.bg-yellow    { background: var(--yellow); }
+.bg-pink      { background: var(--pink); }
+.bg-green     { background: var(--green-deep); }
+.bg-cream     { background: var(--cream); }
+
+/* --- BUTTON SYSTEM ------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-cond);
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.75rem;
+  border: 2.5px solid currentColor;
+  position: relative;
+  transition: transform 80ms ease, box-shadow 80ms ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.btn:active { transform: translate(2px, 2px); }
+
+.btn-yellow {
+  background: var(--yellow);
+  color: var(--ink);
+  border-color: var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.btn-yellow:hover { box-shadow: 6px 6px 0 var(--ink); transform: translate(-2px, -2px); }
+.btn-yellow:active { box-shadow: 2px 2px 0 var(--ink); transform: translate(2px, 2px); }
+
+.btn-pink {
+  background: var(--pink);
+  color: var(--white);
+  border-color: var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.btn-pink:hover { box-shadow: 6px 6px 0 var(--ink); transform: translate(-2px, -2px); }
+.btn-pink:active { box-shadow: 2px 2px 0 var(--ink); transform: translate(2px, 2px); }
+
+.btn-outline-cream {
+  background: transparent;
+  color: var(--cream);
+  border-color: var(--cream);
+  box-shadow: 3px 3px 0 var(--cream);
+}
+.btn-outline-cream:hover { box-shadow: 5px 5px 0 var(--cream); transform: translate(-2px, -2px); }
+.btn-outline-cream:active { box-shadow: 1px 1px 0 var(--cream); transform: translate(2px, 2px); }
+
+.btn-outline-green {
+  background: transparent;
+  color: var(--green-deep);
+  border-color: var(--green-deep);
+  box-shadow: 3px 3px 0 var(--green-deep);
+}
+.btn-outline-green:hover { box-shadow: 5px 5px 0 var(--green-deep); transform: translate(-2px, -2px); }
+.btn-outline-green:active { box-shadow: 1px 1px 0 var(--green-deep); transform: translate(2px, 2px); }
+
+.btn-lg {
+  font-size: 1.05rem;
+  padding: 1rem 2.5rem;
+  letter-spacing: 0.12em;
+}
+
+.btn-sm {
+  font-size: 0.75rem;
+  padding: 0.5rem 1.1rem;
+  letter-spacing: 0.1em;
+}
+
+/* --- FORM INPUTS --------------------------------------- */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field-label {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  opacity: 0.85;
+}
+
+.field-input {
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(245,232,66,0.25);
+  color: var(--cream);
+  padding: 0.65rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.field-input:focus {
+  border-color: var(--yellow);
+  background: rgba(245,232,66,0.06);
+}
+
+.field-input::placeholder {
+  color: rgba(250,245,232,0.3);
+  font-style: italic;
+}
+
+/* --- UPLOAD ZONE --------------------------------------- */
+.upload-zone {
+  border: 2px dashed rgba(245,232,66,0.35);
+  background: rgba(255,255,255,0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s var(--ease-spring);
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+}
+
+.upload-zone:hover {
+  border-color: var(--yellow);
+  background: rgba(245,232,66,0.06);
+  transform: scale(1.01);
+}
+
+.upload-zone.drag-over {
+  border-color: var(--yellow);
+  background: rgba(245,232,66,0.12);
+  transform: scale(1.02);
+}
+
+/* --- STYLE SELECTOR ------------------------------------ */
+.style-btn {
+  border: 2px solid rgba(245,232,66,0.25);
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  transition: all 0.18s var(--ease-spring);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.style-btn.active {
+  border-color: var(--yellow);
+  transform: scale(1.03);
+}
+
+.style-btn:hover:not(.active) {
+  border-color: rgba(245,232,66,0.6);
+  transform: scale(1.02);
+}
+
+/* --- DIVIDER ------------------------------------------- */
+.divider {
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(245,232,66,0.25), transparent);
+}
+
+/* --- SCROLLBAR ----------------------------------------- */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(245,232,66,0.3); border-radius: 2px; }
+
+/* --- ANIMATIONS ---------------------------------------- */
+@keyframes grain-shift {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-2%, -3%); }
+  20%  { transform: translate(-4%, 1%); }
+  30%  { transform: translate(2%, -1%); }
+  40%  { transform: translate(-1%, 3%); }
+  50%  { transform: translate(3%, 2%); }
+  60%  { transform: translate(1%, -4%); }
+  70%  { transform: translate(-3%, 1%); }
+  80%  { transform: translate(-1%, -1%); }
+  90%  { transform: translate(2%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+@keyframes sun-rise {
+  0%   { transform: translateY(20px) scale(0.8); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes wave-drift {
+  0%, 100% { transform: translateX(0); }
+  50%       { transform: translateX(8px); }
+}
+
+@keyframes float-palm {
+  0%, 100% { transform: rotate(-2deg) translateY(0); }
+  50%       { transform: rotate(2deg) translateY(-4px); }
+}
+
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes stamp-in {
+  0%   { transform: scale(1.4) rotate(-8deg); opacity: 0; }
+  60%  { transform: scale(0.95) rotate(2deg); opacity: 1; }
+  80%  { transform: scale(1.02) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes card-reveal {
+  0%   { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0% 0 0); }
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* --- RESPONSIVE UTILS ---------------------------------- */
+.show-mobile { display: none; }
+.show-desktop { display: block; }
+
+@media (max-width: 768px) {
+  .show-mobile  { display: block; }
+  .show-desktop { display: none; }
+
+  .btn { font-size: 0.8rem; padding: 0.7rem 1.4rem; }
+  .btn-lg { font-size: 0.9rem; padding: 0.9rem 1.8rem; }
+
+  .field-label { font-size: 0.65rem; }
+  .field-input { font-size: 0.85rem; padding: 0.6rem 0.8rem; }
+}
+
+/* --- TEXT SELECTION ------------------------------------- */
+::selection {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+/* --- FOCUS VISIBLE -------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+/* --- HEADER LOGO HOVER --------------------------------- */
+.logo-text {
+  transition: color 0.15s;
+}
+.logo-text:hover { color: var(--cream); }
+
+/* --- CARD HOVER LIFT ----------------------------------- */
+.card-hover {
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+/* --- INPUT FOCUS GLOW ---------------------------------- */
+.field-input:focus {
+  box-shadow: 0 0 0 3px rgba(245,232,66,0.12);
+}
+
+/* --- TICKER ANIMATION ---------------------------------- */
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* --- FLOAT ANIMATION ----------------------------------- */
+@keyframes float-palm {
+  0%, 100% { transform: rotate(-2deg) translateY(0); }
+  50%       { transform: rotate(2deg) translateY(-4px); }
+}
+
+/* --- SUN ROTATE ---------------------------------------- */
+@keyframes sun-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* --- PULSE ACCENT --------------------------------------- */
+@keyframes accent-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
