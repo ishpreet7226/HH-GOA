@@ -1,12 +1,10 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Intro } from './components/Intro';
 import { PhotoUpload } from './components/PhotoUpload';
-import { StyleSelector } from './components/StyleSelector';
 import { LivePreview } from './components/LivePreview';
 import { generateBuilderTitle, generateFrameId } from './utils/titleGenerator';
 import { generateCard } from './utils/canvasGenerator';
-import type { StyleId } from './utils/canvasGenerator';
 
 // ─── Ticker tape ──────────────────────────────────────────────────────────────
 function Ticker() {
@@ -84,55 +82,9 @@ function PalmSilhouette({ flip = false, opacity = 0.12 }: { flip?: boolean; opac
 }
 
 // ─── Format selector ─────────────────────────────────────────────────────────
-function FormatSelector({
-  value, onChange
-}: {
-  value: 'builder-id' | 'pfp-frame';
-  onChange: (v: 'builder-id' | 'pfp-frame') => void;
-}) {
-  return (
-    <div className="field-group">
-      <label className="field-label">OUTPUT FORMAT</label>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-        {(['builder-id', 'pfp-frame'] as const).map((fmt) => (
-          <motion.button
-            key={fmt}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => onChange(fmt)}
-            style={{
-              background: value === fmt ? 'rgba(245,232,66,0.1)' : 'rgba(255,255,255,0.03)',
-              border: `2px solid ${value === fmt ? '#f5e842' : 'rgba(245,232,66,0.2)'}`,
-              padding: '0.65rem 0.75rem',
-              cursor: 'pointer',
-              transition: 'all 0.15s',
-            }}
-          >
-            <div style={{
-              fontFamily: 'Barlow Condensed, sans-serif',
-              fontWeight: 800,
-              fontSize: '0.7rem',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              color: value === fmt ? '#f5e842' : 'rgba(250,245,232,0.5)',
-            }}>
-              {fmt === 'builder-id' ? '🪪 BUILDER ID' : '🖼 PFP FRAME'}
-            </div>
-            <div style={{
-              fontFamily: 'Space Mono, monospace',
-              fontSize: '0.5rem',
-              color: value === fmt ? 'rgba(245,232,66,0.6)' : 'rgba(250,245,232,0.25)',
-              marginTop: 3,
-            }}>
-              {fmt === 'builder-id' ? '900×1200 · Poster' : '1080×1080 · X Profile'}
-            </div>
-          </motion.button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ─── Field input ─────────────────────────────────────────────────────────────
+
 function Field({ label, placeholder, value, onChange, hint }: {
   label: string; placeholder: string; value: string;
   onChange: (v: string) => void; hint?: string;
@@ -332,8 +284,6 @@ export default function App() {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [team, setTeam] = useState('');
-  const [style, setStyle] = useState<StyleId>('goa-classic');
-  const [format, setFormat] = useState<'builder-id' | 'pfp-frame'>('builder-id');
   const [generating, setGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [frameId] = useState(() => generateFrameId('', ''));
@@ -344,7 +294,7 @@ export default function App() {
   const handleGenerate = useCallback(async () => {
     setGenerating(true);
     setGeneratedImage(null);
-    await new Promise(r => setTimeout(r, 400)); // brief pulse
+    await new Promise(r => setTimeout(r, 400));
     try {
       const url = await generateCard({
         photo,
@@ -354,8 +304,6 @@ export default function App() {
         builderTitle,
         builderTitleSub,
         frameId,
-        style,
-        format,
       });
       setGeneratedImage(url);
     } catch (err) {
@@ -363,22 +311,11 @@ export default function App() {
     } finally {
       setGenerating(false);
     }
-  }, [photo, name, role, team, builderTitle, builderTitleSub, frameId, style, format]);
+  }, [photo, name, role, team, builderTitle, builderTitleSub, frameId]);
 
   const handleReset = useCallback(() => {
     setGeneratedImage(null);
   }, []);
-
-  // Auto-regenerate live preview when style changes (but only if already generated)
-  const prevStyle = useRef(style);
-  useEffect(() => {
-    if (generatedImage && prevStyle.current !== style) {
-      prevStyle.current = style;
-      handleGenerate();
-    } else {
-      prevStyle.current = style;
-    }
-  }, [style]);
 
   return (
     <>
@@ -622,9 +559,6 @@ export default function App() {
                     onPhotoRemove={() => setPhoto(null)}
                   />
 
-                  {/* Format selector */}
-                  <FormatSelector value={format} onChange={setFormat} />
-
                   {/* Fields */}
                   <Field
                     label="YOUR NAME"
@@ -649,17 +583,11 @@ export default function App() {
                   </div>
 
                   <Field
-                    label="TEAM (OPTIONAL)"
-                    placeholder="e.g. Team Chaos"
+                    label="TEAM / CURRENTLY SHIPPING (OPTIONAL)"
+                    placeholder="e.g. Team Chaos · Building the Future"
                     value={team}
                     onChange={setTeam}
                   />
-
-                  {/* Style selector */}
-                  <StyleSelector value={style} onChange={(s) => {
-                    setStyle(s);
-                    setGeneratedImage(null);
-                  }} />
 
                   {/* Scooter decorative */}
                   <div style={{ display: 'flex', justifyContent: 'flex-end', opacity: 0.6 }}>
@@ -801,10 +729,7 @@ export default function App() {
                   </div>
 
                   {/* The actual preview */}
-                  <div style={{
-                    maxWidth: format === 'pfp-frame' ? 480 : 420,
-                    margin: '0 auto',
-                  }}>
+                  <div style={{ maxWidth: 420, margin: '0 auto' }}>
                     <LivePreview
                       photo={photo}
                       name={name}
@@ -813,8 +738,6 @@ export default function App() {
                       builderTitle={builderTitle}
                       builderTitleSub={builderTitleSub}
                       frameId={frameId}
-                      style={style}
-                      format={format}
                       generating={generating}
                       generatedImage={generatedImage}
                     />

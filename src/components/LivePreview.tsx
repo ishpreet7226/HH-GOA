@@ -1,5 +1,4 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import type { StyleId } from '../utils/canvasGenerator';
 
 interface LivePreviewProps {
   photo: string | null;
@@ -9,353 +8,554 @@ interface LivePreviewProps {
   builderTitle: string;
   builderTitleSub: string;
   frameId: string;
-  style: StyleId;
-  format: 'builder-id' | 'pfp-frame';
   generating: boolean;
   generatedImage: string | null;
 }
 
-interface StyleTokens {
-  bg: string;
-  fg: string;
-  accent1: string;
-  accent2: string;
-  border: string;
-  stripeBg: string;
-  stripeText: string;
-  bgPattern: string;
-  bgTemplateUrl: string;
+// ── Decorative SVGs ───────────────────────────────────────────────────────────
+
+function PalmLeft() {
+  return (
+    <svg width="70" height="130" viewBox="0 0 70 130" fill="none">
+      <path d="M30 130 Q36 90 44 20" stroke="#2a6b3a" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M44 20 Q62 10 72 -6" stroke="#2a6b3a" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M44 20 Q26 8 14 -8" stroke="#2a6b3a" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M44 20 Q50 4 44 -16" stroke="#2a6b3a" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M44 20 Q34 2 36 -18" stroke="#2a6b3a" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M44 20 Q64 -4 76 -18" stroke="#2a6b3a" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
 }
 
-const STYLE_TOKENS: Record<StyleId, StyleTokens> = {
-  'goa-classic': {
-    bg: '#faf5e8', fg: '#1a5c2a', accent1: '#f5e842', accent2: '#f52d7e',
-    border: '#1a5c2a', stripeBg: '#1a5c2a', stripeText: '#f5e842', bgPattern: '#f0e8d0',
-    bgTemplateUrl: '/templates/goa-classic.png',
-  },
-  'night-shift': {
-    bg: '#0f2a16', fg: '#faf5e8', accent1: '#f5e842', accent2: '#f52d7e',
-    border: '#f5e842', stripeBg: '#f5e842', stripeText: '#0f2a16', bgPattern: '#1a3d22',
-    bgTemplateUrl: '/templates/night-shift.png',
-  },
-  'sunset-builder': {
-    bg: '#faf5e8', fg: '#1a5c2a', accent1: '#f52d7e', accent2: '#f5e842',
-    border: '#f52d7e', stripeBg: '#f52d7e', stripeText: '#faf5e8', bgPattern: '#fce8d0',
-    bgTemplateUrl: '/templates/sunset-builder.png',
-  },
-};
-
-function HalftonePattern({ color }: { color: string }) {
+function PalmRight() {
   return (
-    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.5 }}>
+    <svg width="70" height="130" viewBox="0 0 70 130" fill="none" style={{ transform: 'scaleX(-1)' }}>
+      <path d="M30 130 Q36 90 44 20" stroke="#2a6b3a" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M44 20 Q62 10 72 -6" stroke="#2a6b3a" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M44 20 Q26 8 14 -8" stroke="#2a6b3a" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M44 20 Q50 4 44 -16" stroke="#2a6b3a" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M44 20 Q34 2 36 -18" stroke="#2a6b3a" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M44 20 Q64 -4 76 -18" stroke="#2a6b3a" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function SunsetScene() {
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 220 120" fill="none" preserveAspectRatio="xMidYMid slice">
+      {/* Sky gradient */}
+      <rect width="220" height="120" fill="#0e1810"/>
+      {/* Sun */}
+      <circle cx="110" cy="82" r="22" fill="#f5e842" opacity="0.9"/>
+      {/* Water */}
+      <rect y="90" width="220" height="30" fill="#0e3020"/>
+      {/* Wave lines */}
+      {[0,1,2].map(i => (
+        <path key={i} d={`M${i*30} ${95+i*4} Q${15+i*30} ${93+i*4} ${30+i*30} ${95+i*4} Q${45+i*30} ${97+i*4} ${60+i*30} ${95+i*4}`} stroke="#1a5c2a" strokeWidth="1" opacity="0.6"/>
+      ))}
+      {/* Palm silhouettes */}
+      <path d="M20 120 Q24 85 30 45" stroke="#0a1008" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M30 45 Q46 36 54 22" stroke="#0a1008" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M30 45 Q16 34 8 20" stroke="#0a1008" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M30 45 Q32 28 28 12" stroke="#0a1008" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M185 120 Q189 82 196 38" stroke="#0a1008" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M196 38 Q212 28 220 14" stroke="#0a1008" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M196 38 Q180 28 172 14" stroke="#0a1008" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M196 38 Q198 20 194 4" stroke="#0a1008" strokeWidth="2" strokeLinecap="round"/>
+      {/* Birds */}
+      <path d="M70 30 Q74 26 78 30" stroke="#ccc" strokeWidth="1" fill="none" opacity="0.5"/>
+      <path d="M88 22 Q92 18 96 22" stroke="#ccc" strokeWidth="1" fill="none" opacity="0.4"/>
+      <path d="M142 28 Q146 24 150 28" stroke="#ccc" strokeWidth="1" fill="none" opacity="0.4"/>
+    </svg>
+  );
+}
+
+function BuildShipRepeatSign() {
+  const signs = ['BUILD', 'SHIP', 'REPEAT'];
+  const colors = ['#f5e842', '#f52d7e', '#1a5c2a'];
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' }}>
+      {signs.map((s, i) => (
+        <div key={s} style={{
+          background: colors[i],
+          padding: '2px 10px 2px 6px',
+          fontFamily: 'Barlow Condensed, sans-serif',
+          fontWeight: 800,
+          fontSize: 'clamp(0.42rem, 1.2vw, 0.58rem)',
+          letterSpacing: '0.08em',
+          color: i === 2 ? '#f5e842' : '#0e1810',
+          clipPath: 'polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%)',
+          whiteSpace: 'nowrap',
+        }}>{s}</div>
+      ))}
+    </div>
+  );
+}
+
+function HalftoneGrid() {
+  return (
+    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.06, pointerEvents: 'none' }}>
       <defs>
-        <pattern id="dots" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
-          <circle cx="7" cy="7" r="1.4" fill={color} />
+        <pattern id="hg" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+          <circle cx="5" cy="5" r="1.2" fill="#faf5e8"/>
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#dots)" />
+      <rect width="100%" height="100%" fill="url(#hg)"/>
     </svg>
   );
 }
 
-function PalmIcon({ color, flip }: { color: string; flip?: boolean }) {
+function GridLines() {
   return (
-    <svg width="40" height="65" viewBox="0 0 40 65" fill="none"
-      style={{ transform: flip ? 'scaleX(-1)' : 'none', opacity: 0.3 }}>
-      <path d="M18 65 Q22 40 25 5" stroke={color} strokeWidth="2" />
-      <path d="M25 5 Q38 2 44 -8" stroke={color} strokeWidth="1.5" />
-      <path d="M25 5 Q12 -1 6 -10" stroke={color} strokeWidth="1.5" />
-      <path d="M25 5 Q28 -8 24 -22" stroke={color} strokeWidth="1.5" />
-      <path d="M25 5 Q16 -9 20 -22" stroke={color} strokeWidth="1.5" />
+    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.1, pointerEvents: 'none' }}>
+      <line x1="0" y1="14%" x2="100%" y2="14%" stroke="#faf5e8" strokeWidth="0.5" strokeDasharray="3,3"/>
+      <line x1="55%" y1="0" x2="55%" y2="60%" stroke="#faf5e8" strokeWidth="0.5" strokeDasharray="3,3"/>
     </svg>
   );
 }
 
-function SunRays({ color }: { color: string }) {
+function BuildingTheFutureStamp() {
   return (
-    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-      <circle cx="28" cy="28" r="14" fill={color} />
-      {[0,30,60,90,120,150,180,210,240,270,300,330].map((deg, i) => (
-        <line
-          key={i}
-          x1={28 + 18 * Math.cos((deg * Math.PI) / 180)}
-          y1={28 + 18 * Math.sin((deg * Math.PI) / 180)}
-          x2={28 + 25 * Math.cos((deg * Math.PI) / 180)}
-          y2={28 + 25 * Math.sin((deg * Math.PI) / 180)}
-          stroke={color} strokeWidth="1.8" strokeLinecap="round"
-        />
-      ))}
+    <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+      <defs>
+        <path id="topArc" d="M 10,36 A 26,26 0 0,1 62,36"/>
+        <path id="botArc" d="M 12,42 A 26,26 0 0,0 60,42"/>
+      </defs>
+      {/* Rings */}
+      <circle cx="36" cy="36" r="33" stroke="#f52d7e" strokeWidth="2" strokeDasharray="3,2.5"/>
+      <circle cx="36" cy="36" r="27" stroke="#f52d7e" strokeWidth="0.8"/>
+      {/* Palm silhouette */}
+      <path d="M36 54 Q37 44 39 30" stroke="#f52d7e" strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="M39 30 Q47 25 52 18" stroke="#f52d7e" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M39 30 Q30 24 25 17" stroke="#f52d7e" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M39 30 Q41 20 38 10" stroke="#f52d7e" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M33 57 Q36 54 39 57" stroke="#f52d7e" strokeWidth="1.2" fill="none"/>
+      {/* Curved top text */}
+      <text fill="#f52d7e" fontSize="6.5" fontFamily="Barlow Condensed, sans-serif" fontWeight="800" letterSpacing="1.5">
+        <textPath href="#topArc" startOffset="8%">BUILDING THE FUTURE</textPath>
+      </text>
+      {/* Star dividers */}
+      <text fill="#f52d7e" fontSize="6" fontFamily="sans-serif" x="21" y="48">★</text>
+      <text fill="#f52d7e" fontSize="6" fontFamily="sans-serif" x="45" y="48">★</text>
     </svg>
   );
 }
 
-function WaveRow({ color }: { color: string }) {
-  return (
-    <svg width="100%" height="12" viewBox="0 0 300 12" preserveAspectRatio="none" fill="none">
-      {[0, 50, 100, 150, 200, 250].map((x, i) => (
-        <path key={i}
-          d={`M${x} 6 Q${x + 12} 1 ${x + 25} 6 Q${x + 37} 11 ${x + 50} 6`}
-          stroke={color} strokeWidth="1.2" />
-      ))}
-    </svg>
-  );
-}
+// ── Main card ─────────────────────────────────────────────────────────────────
 
-// Builder ID Card preview
-function BuilderIdPreview({ photo, name, role, team, builderTitle, builderTitleSub, frameId, style }: Omit<LivePreviewProps, 'format' | 'generating' | 'generatedImage'>) {
-  const s = STYLE_TOKENS[style];
+function BuilderCard({ photo, name, role, team, builderTitle, builderTitleSub, frameId }: Omit<LivePreviewProps, 'generating' | 'generatedImage'>) {
+  const displayName = name || 'YOUR NAME';
+  const nameParts = displayName.trim().split(' ');
+  const firstName = nameParts[0] || 'YOUR';
+  const lastName = nameParts.slice(1).join(' ');
+  
+  const displayRole = role || 'BUILDER';
+  const displayTitle = builderTitle || 'THE GOA BUILDER';
+  const displayStack = builderTitleSub || '';
+  const displayShipping = team || 'BUILDING THE FUTURE';
+  const displayClass = 'EXPERIMENTAL BUILDER';
 
   return (
     <div style={{
-      backgroundImage: `url(${s.bgTemplateUrl})`,
-      backgroundSize: '100% 100%',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
       width: '100%',
-      aspectRatio: '0.75',
+      aspectRatio: '0.77',
       fontFamily: 'inherit',
       position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
       overflow: 'hidden',
-      border: `3px solid ${s.border}`,
-      boxShadow: `6px 6px 0 ${s.border}`,
+      border: '2px solid #1a1a1a',
+      boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
     }}>
-      {/* Top Header */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between',
-        padding: '12px 14px',
-        fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: '0.55rem', letterSpacing: '0.18em', color: s.fg
-      }}>
-        <span>HACKER HOUSE GOA</span>
-        <span>OCT 28–31 · 2026</span>
-      </div>
 
+      {/* ═══ TOP DARK SECTION ═══ */}
       <div style={{
-        textAlign: 'center', marginTop: '2%',
-        fontFamily: 'Playfair Display, serif', fontWeight: 900, fontStyle: 'italic',
-        fontSize: 'clamp(1.8rem, 6vw, 2.8rem)', color: s.fg, letterSpacing: '-0.01em'
-      }}>
-        BUILDER ID
-      </div>
-
-      {/* Photo */}
-      <div style={{
-        margin: '4% auto 0',
-        width: '42%',
-        aspectRatio: '1',
-        borderRadius: 8,
-        border: `3px solid ${s.accent1}`,
-        boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
-        overflow: 'hidden',
+        flex: '0 0 57%',
+        background: '#0e1810',
         position: 'relative',
-        background: '#fff',
-      }}>
-        {photo ? (
-          <img src={photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
-        ) : (
-          <div style={{
-            width: '100%', height: '100%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '2.5rem', background: s.bgPattern
-          }}>
-            👤
-          </div>
-        )}
-      </div>
-
-      {/* Info Section */}
-      <div style={{
-        margin: '5% auto 0',
-        width: '72%',
-        background: s.bg === '#0f2a16' ? 'rgba(15,42,22,0.85)' : 'rgba(250,245,232,0.85)',
-        borderRadius: 12,
-        padding: '10px 0',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}>
-        <div style={{
-          fontFamily: 'Playfair Display, serif', fontWeight: 900,
-          fontSize: name.length > 14 ? 'clamp(1rem, 3vw, 1.4rem)' : 'clamp(1.3rem, 4vw, 1.8rem)',
-          color: s.nameColor, letterSpacing: '-0.01em', wordBreak: 'break-word',
-          textAlign: 'center', padding: '0 10px'
-        }}>
-          {(name || 'YOUR NAME').toUpperCase()}
-        </div>
-        
-        <div style={{ width: '50%', height: 2, background: s.accent2, margin: '6px 0' }} />
-
-        <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: '0.5rem', letterSpacing: '0.2em', color: s.label }}>
-          ROLE
-        </div>
-        <div style={{ fontFamily: 'Space Mono, monospace', fontSize: '0.65rem', color: s.fg, marginTop: 2 }}>
-          {role || 'Builder'}
-        </div>
-
-        {team && (
-          <>
-            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: '0.5rem', letterSpacing: '0.2em', color: s.label, marginTop: 6 }}>
-              TEAM
-            </div>
-            <div style={{ fontFamily: 'Space Mono, monospace', fontSize: '0.65rem', color: s.fg, marginTop: 2 }}>
-              {team}
-            </div>
-          </>
-        )}
-        
-        <div style={{
-          background: s.accent1,
-          margin: '8px 12px 4px', padding: '6px 12px',
-          borderRadius: 6, width: '80%', textAlign: 'center'
-        }}>
-          <div style={{
-            fontFamily: 'Playfair Display, serif', fontWeight: 900, fontStyle: 'italic',
-            fontSize: 'clamp(0.8rem, 2.5vw, 1.1rem)', color: s.nameColor === '#faf5e8' ? s.fg : '#0f2a16'
-          }}>
-            {builderTitle}
-          </div>
-        </div>
-      </div>
-
-      <div style={{
-        position: 'absolute', bottom: '4%', left: '50%', transform: 'translateX(-50%)',
-        background: s.accent2, color: '#fff',
-        padding: '3px 12px', borderRadius: 10,
-        fontFamily: 'Space Mono, monospace', fontWeight: 700, fontSize: '0.45rem',
-      }}>
-        {frameId}
-      </div>
-    </div>
-  );
-}
-
-// PFP Frame preview
-function PFPFramePreview({ photo, name, builderTitle, style }: Pick<LivePreviewProps, 'photo' | 'name' | 'builderTitle' | 'style'>) {
-  const s = STYLE_TOKENS[style];
-
-  return (
-    <div style={{
-      background: s.bg,
-      width: '100%',
-      aspectRatio: '1',
-      position: 'relative',
-      overflow: 'hidden',
-      border: `3px solid ${s.border}`,
-      boxShadow: `6px 6px 0 ${s.border}`,
-    }}>
-      <HalftonePattern color={s.bgPattern} />
-
-      {/* Top strip */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0,
-        background: s.stripeBg, padding: '7px 14px',
-        textAlign: 'center',
-        fontFamily: 'Playfair Display, serif',
-        fontWeight: 900,
-        fontStyle: 'italic',
-        fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
-        color: s.stripeText,
-        zIndex: 2,
-      }}>
-        HACKER HOUSE GOA
-      </div>
-
-      {/* Photo circle */}
-      <div style={{
-        position: 'absolute',
-        top: '50%', left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: '64%',
-        aspectRatio: '1',
-        borderRadius: '50%',
-        border: `3px solid ${s.border}`,
-        outline: `5px dashed ${s.accent1}`,
-        outlineOffset: 4,
         overflow: 'hidden',
-        background: s.bgPattern,
       }}>
-        {photo ? (
-          <img src={photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : (
+        <HalftoneGrid />
+        <GridLines />
+
+        {/* Top bar: BUILD · SHIP · REPEAT */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          padding: '4px 10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          zIndex: 3,
+        }}>
           <div style={{
-            width: '100%', height: '100%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: s.fg, opacity: 0.3, fontSize: '0.6rem',
-            fontFamily: 'Barlow Condensed, sans-serif',
-            letterSpacing: '0.1em',
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700,
+            fontSize: 'clamp(0.35rem, 1vw, 0.48rem)',
+            color: 'rgba(250,245,232,0.5)',
+            letterSpacing: '0.18em',
             textTransform: 'uppercase',
           }}>
-            PHOTO
+            BUILD · SHIP · REPEAT
           </div>
-        )}
+          <div style={{ flex: 1, height: 1, background: 'rgba(250,245,232,0.15)', marginLeft: 4 }} />
+          <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 'clamp(0.3rem, 0.8vw, 0.4rem)', color: 'rgba(250,245,232,0.2)', letterSpacing: '0.04em' }}>8001</div>
+        </div>
+
+        {/* Photo — right side, diagonal clip */}
+        <div style={{
+          position: 'absolute',
+          top: 0, right: 0,
+          width: '58%',
+          height: '100%',
+          clipPath: 'polygon(22% 0%, 100% 0%, 100% 100%, 0% 100%)',
+          overflow: 'hidden',
+          zIndex: 1,
+        }}>
+          {photo ? (
+            <img src={photo} alt="" style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center top',
+              filter: 'grayscale(30%) contrast(1.1)',
+            }} />
+          ) : (
+            <div style={{
+              width: '100%', height: '100%',
+              background: 'linear-gradient(145deg, #1e2e20 0%, #0e1810 60%, #162218 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+              paddingRight: '10%',
+            }}>
+              <div style={{ opacity: 0.12, fontSize: 'clamp(3rem, 10vw, 6rem)' }}>👤</div>
+            </div>
+          )}
+          {/* Overlay grain on photo */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to right, rgba(14,24,16,0.7) 0%, transparent 40%)',
+          }} />
+        </div>
+
+        {/* HH GOA 2026 badge — top right */}
+        <div style={{
+          position: 'absolute', top: 0, right: 0,
+          background: '#f52d7e',
+          padding: '5px 10px',
+          zIndex: 4,
+          border: '2px solid #0e1810',
+          borderTop: 'none', borderRight: 'none',
+        }}>
+          <div style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+            fontSize: 'clamp(0.8rem, 2.5vw, 1.2rem)',
+            color: '#fff', letterSpacing: '0.04em',
+            lineHeight: 1, textAlign: 'center',
+          }}>HH<br />GOA</div>
+          <div style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700,
+            fontSize: 'clamp(0.5rem, 1.4vw, 0.7rem)',
+            color: 'rgba(255,255,255,0.85)',
+            textAlign: 'center', letterSpacing: '0.06em',
+          }}>2026</div>
+        </div>
+
+        {/* Left: Stacked title */}
+        <div style={{
+          position: 'absolute',
+          left: 0, bottom: '6%',
+          width: '54%',
+          padding: '0 0 0 10px',
+          zIndex: 2,
+        }}>
+          {/* Decorative asterisk */}
+          <div style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 400,
+            fontSize: 'clamp(0.55rem, 1.6vw, 0.9rem)',
+            color: 'rgba(250,245,232,0.25)',
+            letterSpacing: '0.1em', marginBottom: 2,
+          }}>✦ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ✦</div>
+
+          <div style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+            fontSize: 'clamp(1.6rem, 5.5vw, 3.2rem)',
+            color: '#faf5e8',
+            lineHeight: 0.88,
+            letterSpacing: '-0.01em',
+            textTransform: 'uppercase',
+          }}>HACKER</div>
+          <div style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+            fontSize: 'clamp(1.6rem, 5.5vw, 3.2rem)',
+            color: '#faf5e8',
+            lineHeight: 0.88,
+            letterSpacing: '-0.01em',
+            textTransform: 'uppercase',
+          }}>HOUSE</div>
+          <div style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+            fontSize: 'clamp(1.6rem, 5.5vw, 3.2rem)',
+            color: '#f52d7e',
+            lineHeight: 0.88,
+            letterSpacing: '-0.01em',
+            textTransform: 'uppercase',
+          }}>GOA</div>
+
+          <div style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700,
+            fontSize: 'clamp(0.75rem, 2.4vw, 1.4rem)',
+            color: '#f5e842',
+            lineHeight: 1.2,
+            marginTop: 4,
+          }}>2026</div>
+
+          <div style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 600,
+            fontSize: 'clamp(0.38rem, 1.1vw, 0.58rem)',
+            color: 'rgba(250,245,232,0.55)',
+            letterSpacing: '0.06em',
+            lineHeight: 1.5,
+            marginTop: 4,
+          }}>
+            GOA, INDIA<br />
+            28—31 OCT 2026<br />
+            #FRAMEINGOA
+          </div>
+
+          {/* Decorative small mark */}
+          <div style={{
+            fontFamily: 'Space Mono, monospace',
+            fontSize: 'clamp(0.3rem, 0.85vw, 0.45rem)',
+            color: 'rgba(250,245,232,0.18)',
+            marginTop: 6,
+            letterSpacing: '0.04em',
+          }}>▤ &nbsp; ✕ &nbsp; + &nbsp; ─ ─</div>
+        </div>
+
+        {/* Building The Future stamp */}
+        <div style={{
+          position: 'absolute',
+          right: '2%', bottom: '12%',
+          zIndex: 3,
+          opacity: 0.8,
+          width: 'clamp(50px, 13%, 72px)',
+        }}>
+          <BuildingTheFutureStamp />
+        </div>
+
+        {/* Plus/crosshair decorations */}
+        <div style={{ position: 'absolute', left: '52%', top: '18%', zIndex: 2, color: 'rgba(250,245,232,0.2)', fontSize: 'clamp(0.5rem, 1.5vw, 0.8rem)', fontFamily: 'sans-serif' }}>+</div>
+        <div style={{ position: 'absolute', left: '44%', bottom: '22%', zIndex: 2, color: 'rgba(250,245,232,0.15)', fontSize: 'clamp(0.4rem, 1.2vw, 0.7rem)', fontFamily: 'sans-serif' }}>✦</div>
       </div>
 
-      {/* Corner frames */}
-      {[{top:28,left:8},{top:28,right:8},{bottom:28,left:8},{bottom:28,right:8}].map((pos, i) => (
-        <div key={i} style={{
-          position: 'absolute', ...pos, width: 18, height: 18, zIndex: 2,
-          borderTop: i < 2 ? `2.5px solid ${s.border}` : 'none',
-          borderBottom: i >= 2 ? `2.5px solid ${s.border}` : 'none',
-          borderLeft: i % 2 === 0 ? `2.5px solid ${s.border}` : 'none',
-          borderRight: i % 2 !== 0 ? `2.5px solid ${s.border}` : 'none',
-        }} />
-      ))}
-
-      {/* Palm decorations */}
-      <div style={{ position: 'absolute', bottom: 28, left: 4, zIndex: 1 }}>
-        <PalmIcon color={s.fg} />
-      </div>
-      <div style={{ position: 'absolute', bottom: 28, right: 4, zIndex: 1 }}>
-        <PalmIcon color={s.fg} flip />
-      </div>
-
-      {/* Sun */}
-      <div style={{ position: 'absolute', top: 36, right: 16, zIndex: 1, opacity: 0.8 }}>
-        <SunRays color={s.accent1} />
-      </div>
-
-      {/* Bottom strip */}
+      {/* ═══ CREAM LOWER SECTION ═══ */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        background: s.stripeBg,
-        padding: '7px 14px',
+        flex: '0 0 32%',
+        background: '#f5f0df',
+        position: 'relative',
         display: 'flex',
-        justifyContent: 'space-between',
-        zIndex: 2,
+        overflow: 'hidden',
       }}>
-        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: s.stripeText }}>
-          {(name || 'BUILDER').toUpperCase()}
-        </span>
-        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.1em', color: s.accent2 === s.stripeText ? '#fff' : s.accent2 }}>
-          #FRAMEINGOA
-        </span>
+        {/* Left: name + role + title + stack */}
+        <div style={{
+          flex: '0 0 58%',
+          padding: '8px 8px 6px 10px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 2,
+          position: 'relative',
+          zIndex: 2,
+          overflow: 'hidden',
+        }}>
+          {/* Name — large bold black, may wrap to two lines */}
+          <div>
+            <div style={{
+              fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+              fontSize: displayName.length > 12 ? 'clamp(1.3rem, 4vw, 2.2rem)' : 'clamp(1.6rem, 5vw, 2.8rem)',
+              color: '#0e1810',
+              lineHeight: 0.88,
+              letterSpacing: '-0.01em',
+              textTransform: 'uppercase',
+            }}>
+              {firstName}
+            </div>
+            {lastName && (
+              <div style={{
+                fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+                fontSize: displayName.length > 12 ? 'clamp(1.3rem, 4vw, 2.2rem)' : 'clamp(1.6rem, 5vw, 2.8rem)',
+                color: '#0e1810',
+                lineHeight: 0.88,
+                letterSpacing: '-0.01em',
+                textTransform: 'uppercase',
+              }}>
+                {lastName}
+              </div>
+            )}
+          </div>
+
+          {/* Role — yellow bar */}
+          <div style={{
+            background: '#f5e842',
+            display: 'inline-block',
+            padding: '1px 6px',
+            marginTop: 3,
+            alignSelf: 'flex-start',
+          }}>
+            <span style={{
+              fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700,
+              fontSize: 'clamp(0.44rem, 1.3vw, 0.65rem)',
+              color: '#0e1810',
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+            }}>
+              {displayRole.toUpperCase()}
+            </span>
+          </div>
+
+          {/* Builder title — pink outlined box */}
+          <div style={{
+            border: '1.5px solid #f52d7e',
+            padding: '2px 8px',
+            marginTop: 2,
+            alignSelf: 'flex-start',
+            maxWidth: '95%',
+            overflow: 'hidden',
+          }}>
+            <span style={{
+              fontFamily: 'Playfair Display, serif', fontWeight: 900, fontStyle: 'italic',
+              fontSize: 'clamp(0.6rem, 1.8vw, 1rem)',
+              color: '#f52d7e',
+              letterSpacing: '-0.01em',
+            }}>
+              {displayTitle}
+            </span>
+          </div>
+
+          {/* Stack / sub line */}
+          {displayStack && (
+            <div style={{
+              fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 600,
+              fontSize: 'clamp(0.38rem, 1.1vw, 0.55rem)',
+              color: '#0e1810',
+              letterSpacing: '0.06em',
+              opacity: 0.7,
+              marginTop: 2,
+              textTransform: 'uppercase',
+            }}>
+              &lt;/&gt; {displayStack}
+            </div>
+          )}
+        </div>
+
+        {/* Right: Goa scene + signs */}
+        <div style={{
+          flex: '0 0 42%',
+          position: 'relative',
+          overflow: 'hidden',
+          borderLeft: '1px solid rgba(14,24,16,0.15)',
+        }}>
+          {/* Sunset scene SVG background */}
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <SunsetScene />
+          </div>
+
+          {/* Palm trees overlay */}
+          <div style={{ position: 'absolute', bottom: 0, left: -4, zIndex: 2 }}>
+            <PalmLeft />
+          </div>
+          <div style={{ position: 'absolute', bottom: 0, right: -4, zIndex: 2 }}>
+            <PalmRight />
+          </div>
+
+          {/* Vertical yellow label "LESS NOISE, MORE SIGNAL" */}
+          <div style={{
+            position: 'absolute', right: 0, top: 0, bottom: 0,
+            width: 'clamp(12px, 3.5%, 18px)',
+            background: '#f5e842',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 3,
+          }}>
+            <div style={{
+              fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800,
+              fontSize: 'clamp(0.28rem, 0.8vw, 0.4rem)',
+              color: '#0e1810',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              writingMode: 'vertical-rl',
+              textOrientation: 'mixed',
+              transform: 'rotate(180deg)',
+              whiteSpace: 'nowrap',
+            }}>
+              LESS NOISE, MORE SIGNAL
+            </div>
+          </div>
+
+          {/* BUILD / SHIP / REPEAT signs */}
+          <div style={{
+            position: 'absolute', bottom: 6, left: 8, zIndex: 3,
+          }}>
+            <BuildShipRepeatSign />
+          </div>
+        </div>
       </div>
 
-      {/* Builder title - curved text simulation with straight text */}
+      {/* ═══ BOTTOM DARK STRIP ═══ */}
       <div style={{
-        position: 'absolute',
-        bottom: 42, left: 0, right: 0,
-        textAlign: 'center',
-        fontFamily: 'Barlow Condensed, sans-serif',
-        fontWeight: 700,
-        fontSize: '0.52rem',
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
-        color: s.accent2,
-        zIndex: 2,
+        flex: '0 0 11%',
+        background: '#0e1810',
+        borderTop: '2px solid #1a1a1a',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 8px',
+        gap: 0,
+        overflow: 'hidden',
       }}>
-        ★ {builderTitle} ★
+        {/* Leaf icon */}
+        <div style={{
+          fontFamily: 'sans-serif',
+          fontSize: 'clamp(0.5rem, 1.5vw, 0.85rem)',
+          marginRight: 6,
+          opacity: 0.7,
+        }}>🌿</div>
+
+        {/* Builder Class */}
+        <div style={{ flex: 1, borderRight: '1px solid rgba(250,245,232,0.12)', paddingRight: 6, paddingLeft: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 'clamp(0.3rem, 0.85vw, 0.42rem)', color: 'rgba(250,245,232,0.45)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>BUILDER CLASS</div>
+            <div style={{ fontSize: 'clamp(0.3rem, 0.8vw, 0.4rem)', color: '#f52d7e' }}>+</div>
+          </div>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 'clamp(0.36rem, 1vw, 0.5rem)', color: '#faf5e8', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{displayClass}</div>
+        </div>
+
+        {/* Currently Shipping */}
+        <div style={{ flex: 1.2, borderRight: '1px solid rgba(250,245,232,0.12)', padding: '0 6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 'clamp(0.3rem, 0.85vw, 0.42rem)', color: 'rgba(250,245,232,0.45)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>CURRENTLY SHIPPING</div>
+            <div style={{ fontSize: 'clamp(0.3rem, 0.8vw, 0.4rem)', color: '#f52d7e' }}>+</div>
+          </div>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 'clamp(0.36rem, 1vw, 0.5rem)', color: '#faf5e8', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{displayShipping}</div>
+        </div>
+
+        {/* Builder ID + barcode */}
+        <div style={{ flex: 1, padding: '0 0 0 6px' }}>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 'clamp(0.3rem, 0.85vw, 0.42rem)', color: 'rgba(250,245,232,0.45)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>BUILDER ID</div>
+          <div style={{ fontFamily: 'Space Mono, monospace', fontWeight: 700, fontSize: 'clamp(0.32rem, 0.9vw, 0.44rem)', color: '#faf5e8', letterSpacing: '0.04em' }}>{frameId}</div>
+          {/* Mini barcode */}
+          <div style={{ display: 'flex', gap: 1, marginTop: 2, alignItems: 'flex-end' }}>
+            {[2,3,1,4,2,1,3,2,4,1,2,3,1,2,4,1,3,2].map((h, i) => (
+              <div key={i} style={{ width: 1.2, height: h * 2 + 2, background: '#faf5e8', opacity: 0.7 }} />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
+// ── Export ────────────────────────────────────────────────────────────────────
+
 export function LivePreview(props: LivePreviewProps) {
-  const { generating, generatedImage, format, ...rest } = props;
+  const { generating, generatedImage, ...rest } = props;
 
   return (
     <div style={{ width: '100%', position: 'relative' }}>
-      {/* Generating overlay */}
       <AnimatePresence>
         {generating && (
           <motion.div
@@ -363,13 +563,10 @@ export function LivePreview(props: LivePreviewProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(15,42,22,0.85)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
+              position: 'absolute', inset: 0,
+              background: 'rgba(14,24,16,0.92)',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
               zIndex: 10,
             }}
           >
@@ -377,20 +574,16 @@ export function LivePreview(props: LivePreviewProps) {
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
               style={{
-                width: 40, height: 40,
+                width: 36, height: 36,
                 border: '3px solid rgba(245,232,66,0.2)',
                 borderTop: '3px solid #f5e842',
-                borderRadius: '50%',
-                marginBottom: 12,
+                borderRadius: '50%', marginBottom: 10,
               }}
             />
             <div style={{
-              fontFamily: 'Barlow Condensed, sans-serif',
-              fontWeight: 700,
-              fontSize: '0.75rem',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: '#f5e842',
+              fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700,
+              fontSize: '0.72rem', letterSpacing: '0.18em',
+              textTransform: 'uppercase', color: '#f5e842',
             }}>
               GENERATING...
             </div>
@@ -398,41 +591,30 @@ export function LivePreview(props: LivePreviewProps) {
         )}
       </AnimatePresence>
 
-      {/* Generated result */}
       <AnimatePresence>
         {generatedImage && !generating && (
           <motion.div
             key="generated"
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
           >
             <img
               src={generatedImage}
               alt="Generated HH Goa ID"
-              style={{
-                width: '100%',
-                display: 'block',
-                imageRendering: 'crisp-edges',
-              }}
+              style={{ width: '100%', display: 'block', imageRendering: 'crisp-edges' }}
             />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Live preview when no generated image */}
       {!generatedImage && (
         <motion.div
-          key={format}
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
         >
-          {format === 'builder-id' ? (
-            <BuilderIdPreview {...rest} />
-          ) : (
-            <PFPFramePreview photo={rest.photo} name={rest.name} builderTitle={rest.builderTitle} style={rest.style} />
-          )}
+          <BuilderCard {...rest} />
         </motion.div>
       )}
     </div>
