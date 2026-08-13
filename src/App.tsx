@@ -210,9 +210,10 @@ function BuilderTitleReveal({ title, sub, visible }: { title: string; sub: strin
 }
 
 // ─── Download / Share actions ─────────────────────────────────────────────────
-function ActionBar({ imageUrl, name, onReset }: { imageUrl: string; name: string; onReset: () => void }) {
+function ActionBar({ imageUrl, name, role, onReset }: { imageUrl: string; name: string; role: string; onReset: () => void }) {
   const [copied, setCopied] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleDownload = useCallback(() => {
     const a = document.createElement('a');
@@ -223,12 +224,37 @@ function ActionBar({ imageUrl, name, onReset }: { imageUrl: string; name: string
     setTimeout(() => setDownloaded(false), 2500);
   }, [imageUrl, name]);
 
-  const handleShareX = useCallback(() => {
-    const text = encodeURIComponent(`Just claimed my official builder ID for Hacker House Goa 2026! 🌴\n\nBuilding something special in GOA this October.\n\n#FrameInGoa #HackerHouseGoa #HHGoa2026`);
-    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  }, []);
+  const handleShareX = useCallback(async () => {
+    setIsUploading(true);
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageUrl, name })
+      });
+      
+      let shareLink = 'https://hhgoa.com'; // fallback
+      
+      if (response.ok) {
+        const { url } = await response.json();
+        const hostname = window.location.hostname === 'localhost' ? 'localhost:5173' : window.location.hostname;
+        const protocol = window.location.hostname === 'localhost' ? 'http' : 'https';
+        shareLink = `${protocol}://${hostname}/api/share?img=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}`;
+      }
+
+      const text = encodeURIComponent(`Just claimed my official builder ID for Hacker House Goa 2026! 🌴\n\nBuilding something special in GOA this October.\n\n#FrameInGoa #HackerHouseGoa #HHGoa2026\n\n${shareLink}`);
+      window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch (error) {
+      console.error('Share failed', error);
+      // Fallback
+      const text = encodeURIComponent(`Just claimed my official builder ID for Hacker House Goa 2026! 🌴\n\nBuilding something special in GOA this October.\n\n#FrameInGoa #HackerHouseGoa #HHGoa2026`);
+      window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+    } finally {
+      setIsUploading(false);
+    }
+  }, [imageUrl, name, role]);
 
   return (
     <motion.div
@@ -293,10 +319,20 @@ function ActionBar({ imageUrl, name, onReset }: { imageUrl: string; name: string
         <motion.button
           className="btn btn-pink"
           onClick={handleShareX}
-          whileTap={{ scale: 0.96 }}
-          style={{ fontSize: '0.75rem', padding: '0.75rem 1rem', letterSpacing: '0.1em' }}
+          disabled={isUploading}
+          whileTap={{ scale: isUploading ? 1 : 0.96 }}
+          style={{ fontSize: '0.75rem', padding: '0.75rem 1rem', letterSpacing: '0.1em', opacity: isUploading ? 0.7 : 1, cursor: isUploading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          {copied ? '✓ LINKED!' : '✕ SHARE TO X'}
+          {isUploading ? (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <motion.span
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid #0f2a16', borderTopColor: 'transparent', borderRadius: '50%' }}
+              />
+              UPLOADING...
+            </span>
+          ) : copied ? '✓ SHARED!' : '✕ SHARE TO X'}
         </motion.button>
       </div>
 
@@ -702,6 +738,7 @@ export default function App() {
                     <ActionBar
                       imageUrl={generatedImage}
                       name={name}
+                      role={role}
                       onReset={handleReset}
                     />
                   )}
@@ -849,7 +886,7 @@ export default function App() {
                   )}
                   {generatedImage && !generating && (
                     <div className="show-mobile" style={{ marginTop: '1.5rem' }}>
-                      <ActionBar imageUrl={generatedImage} name={name} onReset={handleReset} />
+                      <ActionBar imageUrl={generatedImage} name={name} role={role} onReset={handleReset} />
                     </div>
                   )}
                 </motion.div>
